@@ -5,7 +5,9 @@ namespace MiddlewareNz.EvaluationApi.Tests.Unit.Companies;
 
 public static class CompanyTestDoubles
 {
-	public static Company Dummy() => new(AnyId(), AnyName(), AnyDescription());
+	public static Company Dummy() => Stub();
+
+	public static Company Stub() => new(AnyId(), AnyName(), AnyDescription());
 
 	private static int AnyId() => IntegerGenerator.GreaterThan(0);
 
