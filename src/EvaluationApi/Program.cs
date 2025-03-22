@@ -1,3 +1,7 @@
+using System.Xml.Serialization;
+using MiddlewareNz.EvaluationApi.Companies;
+using RestEase;
+
 namespace MiddlewareNz.EvaluationApi;
 
 public static class Program
@@ -18,8 +22,25 @@ public static class Program
 		builder.Services.AddControllers().AddApplicationPart(typeof(Program).Assembly);
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen();
+
+		builder.Services
+			.AddSingleton<IMap<XmlBackendCompany, Company>, XmlBackendCompanyToCompanyMapper>()
+			.AddSingleton(ctx => new XmlResponseDeserialiser<XmlBackendCompany, Company>(
+				new XmlSerializer(typeof(XmlBackendCompany)),
+				ctx.GetRequiredService<IMap<XmlBackendCompany, Company>>()))
+			.AddSingleton(CreateXmlRestClientFor<IGetCompanyByIdBackendApi, XmlResponseDeserialiser<XmlBackendCompany, Company>>);
+
 		return builder;
 	}
+
+	private static T CreateXmlRestClientFor<T, TXmlDeserialiser>(IServiceProvider services) where TXmlDeserialiser : ResponseDeserializer =>
+		new RestClient(services.Appsetting<string>("BackendApiBaseUrl"))
+		{
+			ResponseDeserializer = services.GetRequiredService<TXmlDeserialiser>()
+		}.For<T>();
+
+	private static T? Appsetting<T>(this IServiceProvider services, string name) =>
+		services.GetRequiredService<IConfiguration>().GetValue<T>(name);
 
 	public static void ConfigureApp(WebApplication app)
 	{
