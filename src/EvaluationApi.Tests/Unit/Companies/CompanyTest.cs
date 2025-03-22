@@ -3,7 +3,7 @@ using Lophtware.Testing.Utilities.NonDeterminism.PrimitiveGeneration;
 using MiddlewareNz.EvaluationApi.Companies;
 using Xunit;
 
-namespace MiddlewareNz.EvaluationApi.Tests.Unit;
+namespace MiddlewareNz.EvaluationApi.Tests.Unit.Companies;
 
 public class CompanyTest
 {
