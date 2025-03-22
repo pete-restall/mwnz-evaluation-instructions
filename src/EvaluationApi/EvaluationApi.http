@@ -1,0 +1,6 @@
+@EvaluationApi_HostAddress = http://localhost:5237
+
+GET {{EvaluationApi_HostAddress}}/companies/1
+Accept: application/json
+
+###
