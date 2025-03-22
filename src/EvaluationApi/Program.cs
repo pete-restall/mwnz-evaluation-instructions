@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Xml.Serialization;
 using MiddlewareNz.EvaluationApi.Companies;
 using RestEase;
@@ -19,7 +20,11 @@ public static class Program
 			throw new ArgumentNullException(nameof(args));
 
 		var builder = WebApplication.CreateBuilder(args);
-		builder.Services.AddControllers().AddApplicationPart(typeof(Program).Assembly);
+		builder.Services
+			.AddControllers()
+			.AddApplicationPart(typeof(Program).Assembly)
+			.AddJsonOptions(cfg => cfg.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower);
+
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen(cfg => cfg.SupportNonNullableReferenceTypes());
 
