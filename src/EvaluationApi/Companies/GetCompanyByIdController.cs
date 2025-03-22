@@ -15,6 +15,9 @@ public class GetCompanyByIdController : ControllerBase
 	}
 
 	[HttpGet("companies/{id:int}")]
+	[ProducesResponseType<Company>((int) HttpStatusCode.OK)]
+	[ProducesResponseType<ErrorResponse>((int) HttpStatusCode.NotFound)]
+	[ProducesResponseType<ErrorResponse>((int) HttpStatusCode.InternalServerError)]
 	public async Task<IActionResult> GetCompanyById(int id)
 	{
 		try

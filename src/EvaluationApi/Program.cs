@@ -21,7 +21,7 @@ public static class Program
 		var builder = WebApplication.CreateBuilder(args);
 		builder.Services.AddControllers().AddApplicationPart(typeof(Program).Assembly);
 		builder.Services.AddEndpointsApiExplorer();
-		builder.Services.AddSwaggerGen();
+		builder.Services.AddSwaggerGen(cfg => cfg.SupportNonNullableReferenceTypes());
 
 		builder.Services
 			.AddSingleton<IMap<XmlBackendCompany, Company>, XmlBackendCompanyToCompanyMapper>()
