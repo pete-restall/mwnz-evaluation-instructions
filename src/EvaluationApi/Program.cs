@@ -15,7 +15,7 @@ public static class Program
 			throw new ArgumentNullException(nameof(args));
 
 		var builder = WebApplication.CreateBuilder(args);
-		builder.Services.AddControllers();
+		builder.Services.AddControllers().AddApplicationPart(typeof(Program).Assembly);
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen();
 		return builder;

@@ -13,26 +13,32 @@ public class WebAppFixture : IAsyncDisposable
 	private static int nextAvailablePortOffset;
 
 	private readonly WebApplicationBuilder appBuilder;
-	private readonly Lazy<(WebApplication app, Task task)> running;
+	private readonly Lazy<WebApplication> app;
 
 	public WebAppFixture()
 	{
 		this.appBuilder = Program.CreateAppBuilder();
 		this.appBuilder.Configuration.AddJsonFile(AppsettingsFilename, optional: false, reloadOnChange: true);
-		this.running = new Lazy<(WebApplication, Task)>(() =>
+		this.app = new Lazy<WebApplication>(() =>
 		{
-			var app = this.appBuilder.Build();
+			var builtApp = this.appBuilder.Build();
 			try
 			{
-				Program.ConfigureApp(app);
-				app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses.Clear();
+				Program.ConfigureApp(builtApp);
 
-				var port = FirstAvailablePortFor(app) + Interlocked.Increment(ref nextAvailablePortOffset);
-				return (app, app.RunAsync("https://localhost:" + port));
+				var port = FirstAvailablePortFor(builtApp) + Interlocked.Increment(ref nextAvailablePortOffset);
+				var addresses = builtApp.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses
+					?? throw new InvalidOperationException("No IServerAddressFeature !");
+
+				addresses.Clear();
+				addresses.Add("https://localhost:" + port);
+
+				builtApp.StartAsync().ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+				return builtApp;
 			}
 			catch
 			{
-				app.DisposeAsync().ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+				builtApp.DisposeAsync().ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
 				throw;
 			}
 		});
@@ -44,13 +50,13 @@ public class WebAppFixture : IAsyncDisposable
 
 	public T RestClientFor<T>() => RestClient.For<T>(this.App.Urls.Single());
 
-	private WebApplication App => this.running.Value.app;
+	private WebApplication App => this.app.Value;
 
 	public ValueTask DisposeAsync()
 	{
 		GC.SuppressFinalize(this);
-		return this.running.IsValueCreated
-			? this.running.Value.app.DisposeAsync()
+		return this.app.IsValueCreated
+			? this.app.Value.DisposeAsync()
 			: ValueTask.CompletedTask;
 	}
 }
